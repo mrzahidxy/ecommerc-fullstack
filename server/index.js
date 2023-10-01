@@ -18,9 +18,9 @@ mongoose
   .catch((error) => console.log(error));
 
 //** ROUTE */
-// const portfolioRouter = require("./routes/portfolio");
+const productRouter = require("./routes/product");
 const authRouter = require("./routes/auth");
-// app.use("/api/portfolio", portfolioRouter);
+app.use("/api/product", productRouter);
 app.use("/api/auth", authRouter);
 
 //** APP */

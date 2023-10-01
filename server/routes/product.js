@@ -1,6 +1,5 @@
 const express = require("express");
 const multer = require("multer");
-const Portfolio = require("../models/portfolio");
 const {
   ref,
   uploadBytes,
@@ -8,6 +7,7 @@ const {
   deleteObject,
 } = require("firebase/storage");
 const storage = require("../firebase");
+const product = require("../models/product");
 
 const router = express.Router();
 const maxFileSize = 5 * 1024 * 1024; // 5MB
@@ -31,59 +31,78 @@ const upload = multer({
 });
 
 // Uploads an image to Firebase Storage and creates a portfolio item
-const uploadImageAndCreatePortfolio = async (img, title, description, link) => {
+const uploadImageAndCreateProduct = async (
+  img,
+  title,
+  description,
+  price,
+  quantity,
+  category,
+  color,
+  size
+) => {
   const filename = `${Date.now()}_${img.originalname}`;
   const fileRef = ref(storage, filename);
 
   await uploadBytes(fileRef, img.buffer);
   const imageUrl = await getDownloadURL(fileRef);
 
-  return new Portfolio({
+  return new product({
     title,
     description,
-    img: imageUrl, // Use the Firebase Storage URL as the image URL
-    link,
+    img: imageUrl,
+    price,
+    quantity,
+    category,
+    color,
+    size,
   }).save();
 };
 
-// Create a new portfolio item
+// Create a new item
 router.post("/", upload.single("image"), async (req, res) => {
   try {
-    const { title, description, link } = req.body;
+    const { title, description, price, quantity, category, color, size } =
+      req.body;
     const img = req.file;
 
     if (!img) {
       return res.status(400).json({ error: "Image file is required" });
     }
 
-    const createdPortfolio = await uploadImageAndCreatePortfolio(
+    const createdProduct = await uploadImageAndCreateProduct(
       img,
       title,
       description,
-      link
+      price,
+      quantity,
+      category,
+      color,
+      size
     );
 
-    res.status(201).json(createdPortfolio);
+    res.status(201).json(createdProduct);
   } catch (error) {
-    console.error("Error creating portfolio item:", error);
+    console.error("Error creating product item:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-// Update an existing portfolio item
+// Update an existing product
 router.put("/:id", upload.single("image"), async (req, res) => {
   try {
-    const { title, description, link } = req.body;
+    const { title, description, price, quantity, category, color, size } =
+      req.body;
     const img = req.file;
-    const portfolioItemId = req.params.id;
+    const productId = req.params.id;
 
     // First, delete the old image from Firebase Storage (if it exists)
-    const existingPortfolioItem = await Portfolio.findById(portfolioItemId);
-    if (existingPortfolioItem) {
+    const existingProduct = await product.findById(productId);
+    if (existingProduct) {
       // Extract the filename from the existing image URL
       const existingImageRef = ref(
         storage,
-        getObjectPathFromUrl(existingPortfolioItem.img)
+        getObjectPathFromUrl(existingProduct.img)
       );
 
       // Delete the existing image
@@ -102,31 +121,39 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       const imageUrl = await getDownloadURL(fileRef);
 
       // Update the portfolio item in the database with the new image URL
-      const updatedPortfolioItem = await Portfolio.findByIdAndUpdate(
-        portfolioItemId,
+      const updatedProduct = await product.findByIdAndUpdate(
+        productId,
         {
           title,
           description,
+          price,
+          quantity,
+          category,
+          color,
+          size,
           img: imageUrl,
-          link,
         },
         { new: true }
       );
 
-      res.status(200).json(updatedPortfolioItem);
+      res.status(200).json(updatedProduct);
     } else {
       // If no new image is provided, update the portfolio item without changing the image
-      const updatedPortfolioItem = await Portfolio.findByIdAndUpdate(
+      const updatedProduct = await Portfolio.findByIdAndUpdate(
         portfolioItemId,
         {
           title,
           description,
-          link,
+          price,
+          quantity,
+          category,
+          color,
+          size,
         },
         { new: true }
       );
 
-      res.status(200).json(updatedPortfolioItem);
+      res.status(200).json(updatedProduct);
     }
   } catch (error) {
     console.error("Error updating portfolio item:", error);
@@ -134,13 +161,36 @@ router.put("/:id", upload.single("image"), async (req, res) => {
   }
 });
 
+// Get products
 router.get("/", async (req, res) => {
   try {
-    const portfolioItems = await Portfolio.find();
-    res.status(200).json(portfolioItems);
+    const products = await product.find();
+    res.status(200).json(products);
   } catch (error) {
     console.error("Error retrieving portfolio items:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+//Find by id
+router.get("/:id", async (req, res) => {
+  console.log("Hellow");
+  try {
+    const productbyId = await product.findById(req.params.id);
+
+    res.status(200).json(productbyId);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+// Delete
+router.delete("/:id", async (req, res) => {
+  try {
+    await product.findByIdAndDelete(req.params.id);
+    res.status(200).json("Product has been deleted...");
+  } catch (error) {
+    res.status(500).json(error);
   }
 });
 

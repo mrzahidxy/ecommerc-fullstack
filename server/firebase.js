@@ -3,13 +3,13 @@ const { getStorage } = require("firebase/storage");
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCrab1YvhZD_xsDqDL69VTQpnSfzdcluaM",
-  authDomain: "image-store-32e17.firebaseapp.com",
-  projectId: "image-store-32e17",
-  storageBucket: "image-store-32e17.appspot.com",
-  messagingSenderId: "94493848875",
-  appId: "1:94493848875:web:8e19442f438ba93ba0816e",
-  measurementId: "G-L4LD91WXY6"
+  apiKey: "AIzaSyBEyFNhAZvyC3PeERHYWSEWH-xHhaNiWmk",
+  authDomain: "ecommerce-image-store.firebaseapp.com",
+  projectId: "ecommerce-image-store",
+  storageBucket: "ecommerce-image-store.appspot.com",
+  messagingSenderId: "184135225692",
+  appId: "1:184135225692:web:98cc0aa00d78d08305b199",
+  measurementId: "G-KKVDM8F14J"
 };
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
