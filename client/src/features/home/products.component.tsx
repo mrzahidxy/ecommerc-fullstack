@@ -6,8 +6,8 @@ export const Products = ({
   title,
   subtitle,
 }: {
-  title: string;
-  subtitle: string;
+  title?: string;
+  subtitle?: string;
 }) => {
   const destinations = [
     {
